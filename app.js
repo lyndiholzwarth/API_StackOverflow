@@ -7,15 +7,15 @@ $(document).ready( function() {
 		getUnanswered(tags);
 	});
 	$('.inspiration-getter').submit(function(event){
+		// zero out results if previous search has run
 		$('.results').html('');
+		// get the value of the tags the user submitted
 		var answerers = $(this).find("input[name='answerers']").val();
-		// console.log(answerers)
 		getInspired(answerers);
 	})
 });
 
-// this function takes the question object returned by StackOverflow 
-// and creates new result to be appended to DOM
+// this function takes the question object returned by StackOverflow and creates new result to be appended to DOM
 var showQuestion = function(question) {
 	
 	// clone our result template code
@@ -47,35 +47,26 @@ var showQuestion = function(question) {
 	return result;
 };
 
-var showAnswerer= function(question) {
-	// html+='<p>'+testTest+'</p>';
-	// // clone our result template code
+// this function takes the top answerer object returned by StackOverflow and creates new result to be appended to DOM
+var showAnswerer= function(answerersTag) {
+	// clone our result template code
 	var result = $('.templates .answerer').clone();
-	
-	// // Set the question properties in result
-	// var questionElem = result.find('.question-text a');
-	// questionElem.attr('href', question.link);
-	// questionElem.text(question.title);
 
-	// // set the date asked property in result
-	// var asked = result.find('.asked-date');
-	// var date = new Date(1000*question.creation_date);
-	// asked.text(date.toString());
+	// Set the answerer properties in result
+	var displayName = result.find('.display_name a');
+	displayName.attr('href', answerersTag.user.link);
+	displayName.text(answerersTag.user.display_name);
 
-	// // set the #views for question property in result
-	// var viewed = result.find('.viewed');
-	// viewed.text(question.view_count);
+	// Set profil img of answerer
+	var profileImg = result.find('.profileImg');
+	profileImg.attr('src', answerersTag.user.profile_image);
+	displayName.text(answerersTag.user.display_name);
 
-	// // set some properties related to asker
-	// var asker = result.find('.asker');
-	// asker.html('<p>Name: <a target="_blank" href=http://stackoverflow.com/users/' + question.owner.user_id + ' >' +
-	// 												question.owner.display_name +
-	// 											'</a>' +
-	// 						'</p>' +
- // 							'<p>Reputation: ' + question.owner.reputation + '</p>'
-	// );
+	// set the reputation property in result
+	var reputation = result.find('.reputation');
+	reputation.text(answerersTag.user.reputation);
 
-	// return result;
+	return result;
 };
 
 // this function takes the results object from StackOverflow
@@ -92,8 +83,7 @@ var showError = function(error){
 	errorElem.append(errorText);
 };
 
-// takes a string of semi-colon separated tags to be searched
-// for on StackOverflow
+// takes a string of semi-colon separated tags to be searched for on StackOverflow
 var getUnanswered = function(tags) {
 	
 	// the parameters we need to pass in our request to StackOverflow's API
@@ -110,7 +100,7 @@ var getUnanswered = function(tags) {
 		})
 	.done(function(result){
 		var searchResults = showSearchResults(request.tagged, result.items.length);
-		console.log(searchResults)
+		console.log(searchResults);
 
 		$('.search-results').html(searchResults);
 
@@ -124,13 +114,12 @@ var getUnanswered = function(tags) {
 		var errorElem = showError(error);
 		$('.search-results').append(errorElem);
 	});
-	// console.log("unanswered"+result);
-
 };
 
 	function getInspired(answerers){
 	// // the parameters we need to pass in our request to StackOverflow's API
 	var inspiredRequest = {
+		tagged: answerers,
 		site: 'stackoverflow',
 	};
 	var inspiredResult = $.ajax({
@@ -140,19 +129,16 @@ var getUnanswered = function(tags) {
 	type: "GET",
 	})
 	.done(function(inspiredResult){
-		// showResults(data.items);
-	// 	var inspiredSearchResults = showSearchResults(inspiredRequest.tag, inspiredResult.items.length);
-	// 	console.log(searchResults);
-	// 	$('.search-results').html(searchResults);
-		html="";
-		$.each(inspiredResult.items, function(index,value){
-			AnswererName=value.user.display_name
-			// var answerersTag = showAnswerer(AnswererName);
-			// $('.results').append(answerersTag);
-			// html+='<p>'+value.user.display_name+'</p>';
-			console.log(AnswererName);
-		});
-		$('.html').html(html);	
+		searchResults = showSearchResults(inspiredRequest.tagged, inspiredResult.items.length);
+				console.log(searchResults);
+
+		$('.search-results').html(searchResults);
+
+		$.each(inspiredResult.items, function(i, item){
+			console.log(item);
+			var answerer = showAnswerer(item);
+			$('.results').append(answerer);
+ 		});
 	})
 	.fail(function(jqXHR, error, errorThrown){
 		var errorElem = showError(error);
@@ -160,4 +146,3 @@ var getUnanswered = function(tags) {
 	});
 };
 
-// search by tags, find top-answerer sorted by rep(?), name, answered question, date
