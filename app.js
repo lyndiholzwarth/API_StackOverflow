@@ -69,8 +69,7 @@ var showAnswerer= function(answerersTag) {
 	return result;
 };
 
-// this function takes the results object from StackOverflow
-// and creates info about search results to be appended to DOM
+// this function takes the results object from StackOverflow and creates info about search results to be appended to DOM
 var showSearchResults = function(query, resultNum) {
 	var results = resultNum + ' results for <strong>' + query;
 	return results;
